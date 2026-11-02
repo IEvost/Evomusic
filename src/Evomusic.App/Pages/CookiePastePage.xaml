@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Evomusic.App.Pages.CookiePastePage"
+             Title="Paste cookies">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Save" Clicked="OnSaveClicked" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label
+                FontSize="14"
+                Text="Fallback when Google blocks the in-app sign-in. On a computer: open music.youtube.com signed in, open DevTools → Network, reload, select any 'browse' request and copy the value of its 'Cookie' request header. Paste it below." />
+
+            <Border
+                StrokeShape="RoundRectangle 10"
+                Padding="8"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                <Editor
+                    x:Name="CookieEditor"
+                    HeightRequest="220"
+                    Placeholder="SID=...; HSID=...; SAPISID=...; ..."
+                    FontSize="13"
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="False" />
+            </Border>
+
+            <Label x:Name="ErrorLabel" TextColor="Red" IsVisible="False" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

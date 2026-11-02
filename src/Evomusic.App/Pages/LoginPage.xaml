@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Evomusic.App.Pages.LoginPage"
+             Title="Sign in">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Cancel" Order="Primary" Clicked="OnCancelClicked" />
+        <ToolbarItem Text="Paste cookies" Order="Primary" Clicked="OnPasteCookiesClicked" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto">
+        <WebView
+            x:Name="SignInWebView"
+            HandlerChanged="OnWebViewHandlerChanged"
+            Navigated="OnWebViewNavigated" />
+
+        <Label
+            x:Name="StatusLabel"
+            Grid.Row="1"
+            Padding="16,8"
+            FontSize="13"
+            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}"
+            Text="Sign in with your Google account. The page closes automatically when YouTube Music opens." />
+    </Grid>
+
+</ContentPage>

@@ -16,6 +16,15 @@ public sealed class SessionService(ICookieStore store, ILogger<SessionService> l
 
 	public event EventHandler? SessionChanged;
 
+	/// <summary>Visitor ID of the web session; stream requests send it so they look like the same visitor.</summary>
+	public async Task<string?> GetVisitorDataAsync(CancellationToken cancellationToken)
+	{
+		if (_client is null)
+			return null;
+
+		return (_client.Context ?? await _client.InitializeAsync(cancellationToken)).VisitorData;
+	}
+
 	public async Task<bool> RestoreAsync()
 	{
 		var cookies = await store.LoadAsync();

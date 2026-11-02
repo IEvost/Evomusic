@@ -21,7 +21,11 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<ICookieStore, SecureCookieStore>();
 		builder.Services.AddSingleton<SessionService>();
-		builder.Services.AddSingleton<IStreamResolver, YoutubeExplodeResolver>();
+		builder.Services.AddSingleton<IStreamResolver>(services =>
+		{
+			var session = services.GetRequiredService<SessionService>();
+			return new InnerTubeStreamResolver(session.GetVisitorDataAsync);
+		});
 #if IOS
 		builder.Services.AddSingleton<IAudioPlayer, AvAudioPlayer>();
 #elif WINDOWS

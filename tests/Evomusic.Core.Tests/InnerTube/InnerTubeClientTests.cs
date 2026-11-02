@@ -22,7 +22,7 @@ public class InnerTubeClientTests
         var (request, body) = handler.Requests[1];
         Assert.Equal("https://music.youtube.com/youtubei/v1/browse?prettyPrint=false", request.RequestUri!.ToString());
         Assert.Equal("SAPISIDHASH 1700000000_289fd730e8d0d6300b332703c750af560713e6b1", request.Headers.GetValues("Authorization").Single());
-        Assert.Equal("SAPISID=abc123/XYZ", request.Headers.GetValues("Cookie").Single());
+        Assert.Equal("SAPISID=abc123/XYZ; SOCS=CAI", request.Headers.GetValues("Cookie").Single());
         Assert.Equal("67", request.Headers.GetValues("X-Youtube-Client-Name").Single());
         Assert.Equal("VD", request.Headers.GetValues("X-Goog-Visitor-Id").Single());
 

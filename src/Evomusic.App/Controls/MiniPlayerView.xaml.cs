@@ -3,7 +3,7 @@ using Evomusic.App.Services;
 
 namespace Evomusic.App.Controls;
 
-/// <summary>Compact player bar: artwork, title, play/pause and next. Phase 3 turns it into the tab-bar accessory.</summary>
+/// <summary>Compact player bar shown above the tab bar on every page; tap to open Now Playing.</summary>
 public partial class MiniPlayerView : ContentView
 {
 	private PlaybackService? _playback;
@@ -32,7 +32,13 @@ public partial class MiniPlayerView : ContentView
 		if (_playback is null)
 			return;
 
-		PlayPauseButton.Text = _playback.IsPlaying ? "⏸︎" : "▶︎";
+		var dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+		PlayPauseButton.Source = new SymbolImageSource
+		{
+			Name = _playback.IsPlaying ? "pause.fill" : "play.fill",
+			PointSize = 22,
+			Color = dark ? Colors.White : Colors.Black,
+		};
 		PlayPauseButton.IsVisible = !_playback.IsBusy;
 	}
 
@@ -43,4 +49,6 @@ public partial class MiniPlayerView : ContentView
 		if (_playback is not null)
 			await _playback.NextAsync();
 	}
+
+	private async void OnOpenTapped(object? sender, TappedEventArgs e) => await Navigator.ShowNowPlayingAsync();
 }

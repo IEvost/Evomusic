@@ -1,4 +1,5 @@
-﻿using Evomusic.App.Pages;
+﻿using Evomusic.App.Controls;
+using Evomusic.App.Pages;
 using Evomusic.App.Services;
 using Evomusic.Core.Auth;
 using Evomusic.Core.Streams;
@@ -17,7 +18,8 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
+			})
+			.ConfigureImageSources(sources => sources.AddService<ISymbolImageSource, SymbolImageSourceService>());
 
 		builder.Services.AddSingleton<ICookieStore, SecureCookieStore>();
 		builder.Services.AddSingleton<SessionService>();
@@ -33,6 +35,9 @@ public static class MauiProgram
 #endif
 		builder.Services.AddSingleton<PlaybackService>();
 		builder.Services.AddSingleton<HomePage>();
+		builder.Services.AddSingleton<SearchPage>();
+		builder.Services.AddSingleton<LibraryPage>();
+		builder.Services.AddSingleton<SettingsPage>();
 		builder.Services.AddTransient<LoginPage>();
 
 #if DEBUG

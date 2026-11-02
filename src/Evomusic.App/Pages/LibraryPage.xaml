@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             x:Class="Evomusic.App.Pages.LibraryPage"
+             x:DataType="pages:LibraryPage"
+             ControlTemplate="{StaticResource PlayerChrome}"
+             Title="Library">
+
+    <CollectionView ItemsSource="{Binding Rows}" ItemTemplate="{StaticResource RowTemplateSelector}" />
+
+</ContentPage>

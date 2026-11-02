@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             x:Class="Evomusic.App.Pages.SettingsPage"
+             x:DataType="pages:SettingsPage"
+             ControlTemplate="{StaticResource PlayerChrome}"
+             Title="Settings">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="20">
+            <!-- Account -->
+            <Border
+                Padding="16"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                <Grid ColumnDefinitions="56,*" ColumnSpacing="14">
+                    <Border StrokeThickness="0" StrokeShape="Ellipse" WidthRequest="56" HeightRequest="56">
+                        <Image Source="{Binding PhotoUrl}" Aspect="AspectFill" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                        <Label Text="{Binding AccountName}" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding AccountHandle}" FontSize="14" TextColor="{StaticResource Gray400}" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <Button
+                Text="Sign out"
+                IsVisible="{Binding IsSignedIn}"
+                Clicked="OnSignOutClicked"
+                TextColor="Red"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}" />
+
+            <Label Text="{Binding VersionText}" HorizontalTextAlignment="Center" FontSize="13" TextColor="{StaticResource Gray400}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

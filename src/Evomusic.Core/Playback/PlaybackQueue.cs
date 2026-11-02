@@ -9,10 +9,12 @@ public enum RepeatMode
     One,
 }
 
-/// <summary>Platform-independent play queue: the tracks, the current position and the repeat rule.</summary>
-public sealed class PlaybackQueue
+/// <summary>Platform-independent play queue: the tracks, the current position, shuffle and the repeat rule.</summary>
+public sealed class PlaybackQueue(Random? random = null)
 {
+    private readonly Random _random = random ?? Random.Shared;
     private readonly List<Track> _tracks = [];
+    private List<Track> _originalOrder = [];
 
     public IReadOnlyList<Track> Tracks => _tracks;
 
@@ -22,11 +24,44 @@ public sealed class PlaybackQueue
 
     public RepeatMode Repeat { get; set; } = RepeatMode.Off;
 
+    public bool IsShuffled { get; private set; }
+
     public void Set(IEnumerable<Track> tracks, int startIndex)
     {
         _tracks.Clear();
         _tracks.AddRange(tracks);
+        _originalOrder = [.. _tracks];
         CurrentIndex = _tracks.Count == 0 ? -1 : Math.Clamp(startIndex, 0, _tracks.Count - 1);
+        if (IsShuffled)
+            ShuffleKeepingCurrent();
+    }
+
+    /// <summary>Shuffle keeps the current track playing and randomizes everything after it; turning it off restores the original order.</summary>
+    public void SetShuffle(bool shuffled)
+    {
+        if (shuffled == IsShuffled)
+            return;
+
+        IsShuffled = shuffled;
+        if (shuffled)
+        {
+            ShuffleKeepingCurrent();
+            return;
+        }
+
+        var current = Current;
+        _tracks.Clear();
+        _tracks.AddRange(_originalOrder);
+        CurrentIndex = current is null ? -1 : _tracks.IndexOf(current);
+    }
+
+    public bool MoveTo(int index)
+    {
+        if (index < 0 || index >= _tracks.Count)
+            return false;
+
+        CurrentIndex = index;
+        return true;
     }
 
     /// <summary>Advances after a track ends (honours repeat). Returns false when playback should stop.</summary>
@@ -74,5 +109,18 @@ public sealed class PlaybackQueue
         }
 
         return false;
+    }
+
+    private void ShuffleKeepingCurrent()
+    {
+        if (Current is not { } current)
+            return;
+
+        var rest = _tracks.Where(t => !ReferenceEquals(t, current)).ToArray();
+        _random.Shuffle(rest);
+        _tracks.Clear();
+        _tracks.Add(current);
+        _tracks.AddRange(rest);
+        CurrentIndex = 0;
     }
 }

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:vm="clr-namespace:Evomusic.App.ViewModels"
+                    xmlns:models="clr-namespace:Evomusic.Core.Models;assembly=Evomusic.Core"
+                    xmlns:controls="clr-namespace:Evomusic.App.Controls"
+                    xmlns:templates="clr-namespace:Evomusic.App.Resources.Templates"
+                    x:Class="Evomusic.App.Resources.Templates.RowTemplates">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Resources/Styles/Colors.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <templates:ArtworkShapeConverter x:Key="ArtworkShapeConverter" />
+    <templates:ArtworkWidthConverter x:Key="ArtworkWidthConverter" />
+
+    <!-- Album / playlist / artist header -->
+    <DataTemplate x:Key="HeaderRowTemplate" x:DataType="vm:HeaderRow">
+        <VerticalStackLayout Padding="20,8,20,16" Spacing="6">
+            <Border
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 10"
+                HorizontalOptions="Center"
+                Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=16, Offset='0,6'}">
+                <Image
+                    Source="{Binding Header.ThumbnailUrl}"
+                    WidthRequest="{Binding IsArtist, Converter={StaticResource ArtworkWidthConverter}}"
+                    HeightRequest="240"
+                    Aspect="AspectFill" />
+            </Border>
+            <Label
+                Text="{Binding Header.Title}"
+                Margin="0,10,0,0"
+                FontSize="22"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center" />
+            <Label
+                Text="{Binding Header.Subtitle}"
+                FontSize="18"
+                TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                HorizontalTextAlignment="Center" />
+            <Label
+                Text="{Binding Header.SecondSubtitle}"
+                FontSize="13"
+                TextColor="{StaticResource Gray400}"
+                HorizontalTextAlignment="Center" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,10,0,0" IsVisible="{Binding CanPlay}">
+                <Button Text="Play" Clicked="OnPlayAllClicked" Style="{StaticResource PillButton}">
+                    <Button.ImageSource>
+                        <controls:SymbolImageSource Name="play.fill" PointSize="15" Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                    </Button.ImageSource>
+                </Button>
+                <Button Grid.Column="1" Text="Shuffle" Clicked="OnShuffleAllClicked" Style="{StaticResource PillButton}">
+                    <Button.ImageSource>
+                        <controls:SymbolImageSource Name="shuffle" PointSize="15" Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                    </Button.ImageSource>
+                </Button>
+            </Grid>
+            <Label
+                Text="{Binding Header.Description}"
+                Margin="0,8,0,0"
+                FontSize="13"
+                MaxLines="3"
+                LineBreakMode="TailTruncation"
+                TextColor="{StaticResource Gray400}" />
+        </VerticalStackLayout>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TitleRowTemplate" x:DataType="vm:TitleRow">
+        <Label Text="{Binding Title}" Padding="16,18,16,6" FontSize="22" FontAttributes="Bold" />
+    </DataTemplate>
+
+    <!-- Track / result row -->
+    <DataTemplate x:Key="ItemRowTemplate" x:DataType="vm:ItemRow">
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,6" ColumnSpacing="12" MinimumHeightRequest="56">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnItemRowTapped" />
+            </Grid.GestureRecognizers>
+            <Border
+                IsVisible="{Binding ShowArtwork}"
+                StrokeThickness="0"
+                StrokeShape="{Binding Item.Kind, Converter={StaticResource ArtworkShapeConverter}}">
+                <Image Source="{Binding Item.ThumbnailUrl}" WidthRequest="48" HeightRequest="48" Aspect="AspectFill" />
+            </Border>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                <Label Text="{Binding Item.Title}" FontSize="16" LineBreakMode="TailTruncation" />
+                <Label
+                    Text="{Binding Item.Subtitle}"
+                    FontSize="13"
+                    TextColor="{StaticResource Gray400}"
+                    LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+            <Label
+                Grid.Column="2"
+                Text="{Binding Item.Duration}"
+                VerticalOptions="Center"
+                FontSize="13"
+                TextColor="{StaticResource Gray400}" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- Horizontal shelf of cards -->
+    <DataTemplate x:Key="CarouselRowTemplate" x:DataType="vm:CarouselRow">
+        <VerticalStackLayout Padding="0,14,0,4" Spacing="8">
+            <Label Text="{Binding Section.Title}" Padding="16,0" FontSize="22" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Section.Items}" HeightRequest="214">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.Header>
+                    <ContentView WidthRequest="4" />
+                </CollectionView.Header>
+                <CollectionView.Footer>
+                    <ContentView WidthRequest="4" />
+                </CollectionView.Footer>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:MediaItem">
+                        <VerticalStackLayout WidthRequest="150" Spacing="2">
+                            <VerticalStackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardTapped" />
+                            </VerticalStackLayout.GestureRecognizers>
+                            <Border StrokeThickness="0" StrokeShape="{Binding Kind, Converter={StaticResource ArtworkShapeConverter}}">
+                                <Image Source="{Binding ThumbnailUrl}" WidthRequest="150" HeightRequest="150" Aspect="AspectFill" />
+                            </Border>
+                            <Label Text="{Binding Title}" FontSize="14" LineBreakMode="TailTruncation" />
+                            <Label
+                                Text="{Binding Subtitle}"
+                                FontSize="12"
+                                TextColor="{StaticResource Gray400}"
+                                LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </DataTemplate>
+
+    <!-- Library entry -->
+    <DataTemplate x:Key="LinkRowTemplate" x:DataType="vm:LinkRow">
+        <Grid ColumnDefinitions="32,*,Auto" Padding="16,12" ColumnSpacing="12">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnLinkRowTapped" />
+            </Grid.GestureRecognizers>
+            <Image VerticalOptions="Center">
+                <Image.Source>
+                    <controls:SymbolImageSource Name="{Binding Symbol}" PointSize="20" Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                </Image.Source>
+            </Image>
+            <Label Grid.Column="1" Text="{Binding Title}" FontSize="18" VerticalOptions="Center" />
+            <Image Grid.Column="2" VerticalOptions="Center">
+                <Image.Source>
+                    <controls:SymbolImageSource Name="chevron.right" PointSize="13" Color="{StaticResource Gray400}" />
+                </Image.Source>
+            </Image>
+        </Grid>
+    </DataTemplate>
+
+    <templates:RowTemplateSelector
+        x:Key="RowTemplateSelector"
+        Header="{StaticResource HeaderRowTemplate}"
+        Title="{StaticResource TitleRowTemplate}"
+        Item="{StaticResource ItemRowTemplate}"
+        Carousel="{StaticResource CarouselRowTemplate}"
+        Link="{StaticResource LinkRowTemplate}" />
+
+</ResourceDictionary>

@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:Evomusic.Core.Models;assembly=Evomusic.Core"
              xmlns:pages="clr-namespace:Evomusic.App.Pages"
-             xmlns:controls="clr-namespace:Evomusic.App.Controls"
              x:Class="Evomusic.App.Pages.HomePage"
              x:DataType="pages:HomePage"
+             ControlTemplate="{StaticResource PlayerChrome}"
              Title="Home">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem x:Name="AccountToolbarItem" Clicked="OnAccountClicked" />
-    </ContentPage.ToolbarItems>
-
-    <Grid RowDefinitions="*,Auto">
-        <controls:MiniPlayerView Grid.Row="1" />
-
+    <Grid>
         <!-- Signed out -->
         <VerticalStackLayout
             IsVisible="{Binding IsSignedOut}"
@@ -33,61 +26,15 @@
             IsVisible="{Binding IsSignedIn}"
             IsRefreshing="{Binding IsLoading}"
             Command="{Binding RefreshCommand}">
-            <CollectionView ItemsSource="{Binding Shelves}">
+            <CollectionView ItemsSource="{Binding Rows}" ItemTemplate="{StaticResource RowTemplateSelector}">
                 <CollectionView.Header>
-                    <VerticalStackLayout Padding="16,8" Spacing="4">
-                        <Label Text="{Binding Greeting}" FontSize="15" TextColor="{StaticResource Gray400}" />
-                        <Label
-                            Text="{Binding ErrorText}"
-                            IsVisible="{Binding HasError}"
-                            TextColor="Red"
-                            FontSize="13" />
-                    </VerticalStackLayout>
+                    <Label
+                        Text="{Binding ErrorText}"
+                        IsVisible="{Binding HasError}"
+                        Padding="16,8"
+                        TextColor="Red"
+                        FontSize="13" />
                 </CollectionView.Header>
-
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Shelf">
-                        <VerticalStackLayout Padding="0,12,0,4" Spacing="8">
-                            <Label
-                                Text="{Binding Title}"
-                                Padding="16,0"
-                                FontSize="22"
-                                FontAttributes="Bold" />
-                            <CollectionView
-                                ItemsSource="{Binding Items}"
-                                HeightRequest="214">
-                                <CollectionView.ItemsLayout>
-                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12" />
-                                </CollectionView.ItemsLayout>
-                                <CollectionView.Header>
-                                    <ContentView WidthRequest="4" />
-                                </CollectionView.Header>
-                                <CollectionView.ItemTemplate>
-                                    <DataTemplate x:DataType="models:ShelfItem">
-                                        <VerticalStackLayout WidthRequest="150" Spacing="2">
-                                            <VerticalStackLayout.GestureRecognizers>
-                                                <TapGestureRecognizer Tapped="OnItemTapped" />
-                                            </VerticalStackLayout.GestureRecognizers>
-                                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 8">
-                                                <Image
-                                                    Source="{Binding ThumbnailUrl}"
-                                                    WidthRequest="150"
-                                                    HeightRequest="150"
-                                                    Aspect="AspectFill" />
-                                            </Border>
-                                            <Label Text="{Binding Title}" FontSize="14" LineBreakMode="TailTruncation" />
-                                            <Label
-                                                Text="{Binding Subtitle}"
-                                                FontSize="12"
-                                                TextColor="{StaticResource Gray400}"
-                                                LineBreakMode="TailTruncation" />
-                                        </VerticalStackLayout>
-                                    </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
-                        </VerticalStackLayout>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
     </Grid>

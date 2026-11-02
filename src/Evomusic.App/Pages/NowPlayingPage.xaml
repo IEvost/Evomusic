@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             xmlns:controls="clr-namespace:Evomusic.App.Controls"
+             x:Class="Evomusic.App.Pages.NowPlayingPage"
+             x:DataType="pages:NowPlayingPage"
+             ios:Page.ModalPresentationStyle="PageSheet"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" Padding="28,8,28,24" RowSpacing="18">
+        <!-- Sheet grabber / close -->
+        <ImageButton HorizontalOptions="Center" WidthRequest="44" HeightRequest="32" Clicked="OnCloseClicked">
+            <ImageButton.Source>
+                <controls:SymbolImageSource Name="chevron.compact.down" PointSize="28" Color="{StaticResource Gray400}" />
+            </ImageButton.Source>
+        </ImageButton>
+
+        <Border
+            Grid.Row="1"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 14"
+            VerticalOptions="Center"
+            Shadow="{Shadow Brush=Black, Opacity=0.35, Radius=24, Offset='0,10'}">
+            <Image Source="{Binding ArtworkUrl}" Aspect="AspectFill" HeightRequest="{Binding Width, Source={RelativeSource Self}, x:DataType=Image}" />
+        </Border>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="2">
+            <Label Text="{Binding TrackTitle}" FontSize="22" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+            <Label
+                Text="{Binding Artist}"
+                FontSize="18"
+                TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                LineBreakMode="TailTruncation" />
+            <Label Text="{Binding Error}" IsVisible="{Binding HasError}" FontSize="13" TextColor="Red" />
+        </VerticalStackLayout>
+
+        <!-- Progress -->
+        <VerticalStackLayout Grid.Row="3" Spacing="0">
+            <Slider
+                x:Name="ProgressSlider"
+                Minimum="0"
+                Maximum="{Binding DurationSeconds}"
+                Value="{Binding PositionSeconds}"
+                DragStarted="OnDragStarted"
+                DragCompleted="OnDragCompleted"
+                MinimumTrackColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}"
+                MaximumTrackColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                ThumbColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            <Grid ColumnDefinitions="*,*">
+                <Label Text="{Binding PositionText}" FontSize="12" TextColor="{StaticResource Gray400}" />
+                <Label Grid.Column="1" Text="{Binding RemainingText}" FontSize="12" TextColor="{StaticResource Gray400}" HorizontalTextAlignment="End" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- Transport -->
+        <Grid Grid.Row="4" ColumnDefinitions="*,*,*" HeightRequest="72">
+            <ImageButton Clicked="OnPreviousClicked" HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="backward.fill" PointSize="30" Color="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                </ImageButton.Source>
+            </ImageButton>
+            <ImageButton Grid.Column="1" Clicked="OnPlayPauseClicked" HorizontalOptions="Center" Source="{Binding PlayPauseSymbol}" />
+            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsLoadingTrack}" IsVisible="{Binding IsLoadingTrack}" HorizontalOptions="Center" />
+            <ImageButton Grid.Column="2" Clicked="OnNextClicked" HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="forward.fill" PointSize="30" Color="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                </ImageButton.Source>
+            </ImageButton>
+        </Grid>
+
+        <!-- Modes and queue -->
+        <Grid Grid.Row="5" ColumnDefinitions="*,*,*" HeightRequest="44">
+            <ImageButton Clicked="OnShuffleClicked" HorizontalOptions="Center" Source="{Binding ShuffleSymbol}" />
+            <ImageButton Grid.Column="1" Clicked="OnQueueClicked" HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="list.bullet" PointSize="20" Color="{StaticResource Gray400}" />
+                </ImageButton.Source>
+            </ImageButton>
+            <ImageButton Grid.Column="2" Clicked="OnRepeatClicked" HorizontalOptions="Center" Source="{Binding RepeatSymbol}" />
+        </Grid>
+    </Grid>
+
+</ContentPage>

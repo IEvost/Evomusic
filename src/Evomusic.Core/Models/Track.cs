@@ -4,11 +4,14 @@ namespace Evomusic.Core.Models;
 
 public sealed partial record Track(string VideoId, string Title, string? Artist, string? ThumbnailUrl)
 {
-    /// <summary>Builds a track from a Home card; the subtitle looks like "Artist • 121M plays".</summary>
-    public static Track? FromShelfItem(ShelfItem item) =>
-        item.VideoId is null
-            ? null
-            : new Track(item.VideoId, item.Title, item.Subtitle?.Split(" • ")[0], item.ThumbnailUrl);
+    /// <summary>
+    /// Builds a track from a playable item. Falls back to the first subtitle part
+    /// ("Artist • 121M plays") when no run links to an artist page.
+    /// </summary>
+    public static Track? FromMediaItem(MediaItem item) =>
+        item.IsPlayable
+            ? new Track(item.VideoId!, item.Title, item.Artist ?? item.Subtitle?.Split(" • ")[0], item.ThumbnailUrl)
+            : null;
 
     /// <summary>
     /// Artwork URL sized for the lock screen / Now Playing. YT Music thumbnails on googleusercontent

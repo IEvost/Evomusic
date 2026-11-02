@@ -47,11 +47,49 @@ public sealed class PlaybackService : INotifyPropertyChanged
 
 	public bool HasError => Error is not null;
 
-	public async Task PlayAsync(IReadOnlyList<Track> tracks, int startIndex)
+	public TimeSpan Position => _player.Position;
+
+	public TimeSpan Duration => _player.Duration;
+
+	public bool IsShuffled => Queue.IsShuffled;
+
+	public RepeatMode Repeat => Queue.Repeat;
+
+	/// <summary>Raised when the queue's order or contents change (shuffle, new queue).</summary>
+	public event EventHandler? QueueChanged;
+
+	public async Task PlayAsync(IReadOnlyList<Track> tracks, int startIndex, bool shuffle = false)
 	{
+		Queue.SetShuffle(shuffle);
 		Queue.Set(tracks, startIndex);
+		NotifyModes();
 		await LoadCurrentAsync();
 	}
+
+	public async Task PlayQueueIndexAsync(int index)
+	{
+		if (Queue.MoveTo(index))
+			await LoadCurrentAsync();
+	}
+
+	public void ToggleShuffle()
+	{
+		Queue.SetShuffle(!Queue.IsShuffled);
+		NotifyModes();
+	}
+
+	public void CycleRepeat()
+	{
+		Queue.Repeat = Queue.Repeat switch
+		{
+			RepeatMode.Off => RepeatMode.All,
+			RepeatMode.All => RepeatMode.One,
+			_ => RepeatMode.Off,
+		};
+		NotifyModes();
+	}
+
+	public void Seek(TimeSpan position) => _player.Seek(position);
 
 	public void TogglePlayPause()
 	{
@@ -134,6 +172,13 @@ public sealed class PlaybackService : INotifyPropertyChanged
 		Error = error;
 		Notify(nameof(Error));
 		Notify(nameof(HasError));
+	}
+
+	private void NotifyModes()
+	{
+		Notify(nameof(IsShuffled));
+		Notify(nameof(Repeat));
+		QueueChanged?.Invoke(this, EventArgs.Empty);
 	}
 
 	private void NotifyState()

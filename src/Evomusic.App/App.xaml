@@ -2,13 +2,24 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Evomusic.App"
+             xmlns:controls="clr-namespace:Evomusic.App.Controls"
+             xmlns:templates="clr-namespace:Evomusic.App.Resources.Templates"
              x:Class="Evomusic.App.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <templates:RowTemplates />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Every tab page shows the mini player above the tab bar. -->
+            <ControlTemplate x:Key="PlayerChrome">
+                <Grid RowDefinitions="*,Auto">
+                    <ContentPresenter />
+                    <controls:MiniPlayerView Grid.Row="1" />
+                </Grid>
+            </ControlTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

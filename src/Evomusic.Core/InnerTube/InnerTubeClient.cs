@@ -31,6 +31,10 @@ public sealed class InnerTubeClient : IDisposable
 
     public InnerTubeClient(IEnumerable<StoredCookie> cookies, HttpMessageHandler? handler = null, TimeProvider? time = null)
     {
+        // Without a consent cookie, EU-routed requests are redirected to consent.youtube.com.
+        if (!cookies.Any(c => c.Name == "SOCS"))
+            cookies = cookies.Append(new StoredCookie("SOCS", "CAI", ".youtube.com"));
+
         foreach (var cookie in cookies)
         {
             try

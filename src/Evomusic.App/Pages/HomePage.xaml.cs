@@ -1,23 +1,22 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Evomusic.App.Services;
-using Evomusic.Core.Models;
+using Evomusic.App.ViewModels;
+using Evomusic.Core;
 
 namespace Evomusic.App.Pages;
 
-/// <summary>Phase 1 Home: proves the signed-in session by showing the account and the real YT Music home shelves.</summary>
+/// <summary>The signed-in YT Music Home feed (same shelves as music.youtube.com), or the sign-in prompt.</summary>
 public partial class HomePage : ContentPage
 {
 	private readonly SessionService _session;
-	private readonly PlaybackService _playback;
 	private readonly IServiceProvider _services;
 	private bool _restored;
 
-	public HomePage(SessionService session, PlaybackService playback, IServiceProvider services)
+	public HomePage(SessionService session, IServiceProvider services)
 	{
 		InitializeComponent();
 		_session = session;
-		_playback = playback;
 		_services = services;
 		_session.SessionChanged += async (_, _) => await LoadAsync();
 
@@ -25,15 +24,13 @@ public partial class HomePage : ContentPage
 		BindingContext = this;
 	}
 
-	public ObservableCollection<Shelf> Shelves { get; } = [];
+	public ObservableCollection<Row> Rows { get; } = [];
 
 	public ICommand RefreshCommand { get; }
 
 	public bool IsSignedIn => _session.IsSignedIn;
 
 	public bool IsSignedOut => !_session.IsSignedIn;
-
-	public string Greeting { get; private set; } = "";
 
 	public string? ErrorText { get; private set; }
 
@@ -54,9 +51,8 @@ public partial class HomePage : ContentPage
 
 	private async Task LoadAsync()
 	{
-		Shelves.Clear();
+		Rows.Clear();
 		ErrorText = null;
-		AccountToolbarItem.Text = _session.IsSignedIn ? "Sign out" : "";
 		Notify(nameof(IsSignedIn), nameof(IsSignedOut), nameof(ErrorText), nameof(HasError));
 
 		if (_session.Music is not { } music)
@@ -65,14 +61,11 @@ public partial class HomePage : ContentPage
 		SetLoading(true);
 		try
 		{
-			var account = await music.GetAccountAsync();
-			Greeting = account is null ? "Signed in" : $"Signed in as {account.Name}";
-			Notify(nameof(Greeting));
+			var page = await music.BrowseAsync(YouTubeMusicService.HomeId);
+			foreach (var row in RowBuilder.Build(page))
+				Rows.Add(row);
 
-			foreach (var shelf in await music.GetHomeAsync())
-				Shelves.Add(shelf);
-
-			if (Shelves.Count == 0)
+			if (Rows.Count == 0)
 				ErrorText = "Home feed loaded but no shelves were recognized (parser needs an update).";
 		}
 		catch (Exception ex)
@@ -86,30 +79,10 @@ public partial class HomePage : ContentPage
 		}
 	}
 
-	/// <summary>Plays the tapped song with the rest of its shelf as the queue. Albums/playlists come in phase 3.</summary>
-	private async void OnItemTapped(object? sender, TappedEventArgs e)
-	{
-		if ((sender as BindableObject)?.BindingContext is not ShelfItem { VideoId: not null } item)
-			return;
-
-		var shelf = Shelves.FirstOrDefault(s => s.Items.Contains(item));
-		var tracks = (shelf?.Items ?? [item]).Select(Track.FromShelfItem).OfType<Track>().ToList();
-		await _playback.PlayAsync(tracks, tracks.FindIndex(t => t.VideoId == item.VideoId));
-	}
-
 	private async void OnSignInClicked(object? sender, EventArgs e)
 	{
 		var login = _services.GetRequiredService<LoginPage>();
 		await Navigation.PushModalAsync(new NavigationPage(login));
-	}
-
-	private async void OnAccountClicked(object? sender, EventArgs e)
-	{
-		if (!_session.IsSignedIn)
-			return;
-
-		if (await DisplayActionSheetAsync("Sign out of YouTube Music?", "Cancel", "Sign out") == "Sign out")
-			await _session.SignOutAsync();
 	}
 
 	private void SetLoading(bool value)

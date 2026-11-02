@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             x:Class="Evomusic.App.Pages.DetailPage"
+             x:DataType="pages:DetailPage"
+             ControlTemplate="{StaticResource PlayerChrome}">
+
+    <Grid>
+        <CollectionView
+            ItemsSource="{Binding Rows}"
+            ItemTemplate="{StaticResource RowTemplateSelector}"
+            RemainingItemsThreshold="15"
+            RemainingItemsThresholdReached="OnRemainingItemsThresholdReached">
+            <CollectionView.Footer>
+                <ActivityIndicator IsRunning="{Binding IsLoadingMore}" IsVisible="{Binding IsLoadingMore}" Margin="0,12" />
+            </CollectionView.Footer>
+        </CollectionView>
+
+        <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" VerticalOptions="Center" />
+        <Label
+            Text="{Binding ErrorText}"
+            IsVisible="{Binding HasError}"
+            Padding="24"
+            VerticalOptions="Center"
+            HorizontalTextAlignment="Center"
+            TextColor="Red" />
+    </Grid>
+
+</ContentPage>

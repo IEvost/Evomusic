@@ -4,11 +4,30 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Evomusic.App.Pages"
+    xmlns:controls="clr-namespace:Evomusic.App.Controls"
     Title="Evomusic">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate pages:HomePage}"
-        Route="home" />
+    <TabBar>
+        <ShellContent Title="Home" ContentTemplate="{DataTemplate pages:HomePage}" Route="home">
+            <ShellContent.Icon>
+                <controls:SymbolImageSource Name="house.fill" PointSize="20" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Search" ContentTemplate="{DataTemplate pages:SearchPage}" Route="search">
+            <ShellContent.Icon>
+                <controls:SymbolImageSource Name="magnifyingglass" PointSize="20" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Library" ContentTemplate="{DataTemplate pages:LibraryPage}" Route="library">
+            <ShellContent.Icon>
+                <controls:SymbolImageSource Name="square.stack.fill" PointSize="20" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Settings" ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings">
+            <ShellContent.Icon>
+                <controls:SymbolImageSource Name="gearshape.fill" PointSize="20" />
+            </ShellContent.Icon>
+        </ShellContent>
+    </TabBar>
 
 </Shell>

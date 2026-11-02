@@ -2,6 +2,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:services="clr-namespace:Evomusic.App.Services"
+             xmlns:controls="clr-namespace:Evomusic.App.Controls"
              x:Class="Evomusic.App.Controls.MiniPlayerView"
              x:DataType="services:PlaybackService"
              IsVisible="{Binding HasTrack}">
@@ -11,8 +12,13 @@
         Padding="8"
         StrokeThickness="0"
         StrokeShape="RoundRectangle 14"
-        BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+        BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"
+        Shadow="{Shadow Brush=Black, Opacity=0.2, Radius=12, Offset='0,4'}">
         <Grid ColumnDefinitions="48,*,44,44" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnOpenTapped" />
+            </Grid.GestureRecognizers>
+
             <Border Grid.RowSpan="2" StrokeThickness="0" StrokeShape="RoundRectangle 6">
                 <Image
                     Source="{Binding Current.ThumbnailUrl}"
@@ -32,18 +38,14 @@
 
             <Grid Grid.Column="2">
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" WidthRequest="24" HeightRequest="24" />
-                <Button
-                    x:Name="PlayPauseButton"
-                    IsVisible="True"
-                    Clicked="OnPlayPauseClicked"
-                    Style="{StaticResource MiniPlayerButton}" />
+                <ImageButton x:Name="PlayPauseButton" Clicked="OnPlayPauseClicked" WidthRequest="44" HeightRequest="44" />
             </Grid>
 
-            <Button
-                Grid.Column="3"
-                Text="⏭︎"
-                Clicked="OnNextClicked"
-                Style="{StaticResource MiniPlayerButton}" />
+            <ImageButton Grid.Column="3" Clicked="OnNextClicked" WidthRequest="44" HeightRequest="44">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="forward.fill" PointSize="20" Color="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                </ImageButton.Source>
+            </ImageButton>
 
             <Label
                 Grid.Row="1"

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             x:Class="Evomusic.App.Pages.QueuePage"
+             x:DataType="pages:QueuePage"
+             ios:Page.ModalPresentationStyle="PageSheet"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="*,Auto" Padding="20,16,12,8">
+            <Label Text="Playing Next" FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="Done" Clicked="OnDoneClicked" BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" FontAttributes="Bold" />
+        </Grid>
+
+        <CollectionView x:Name="QueueList" Grid.Row="1" ItemsSource="{Binding Entries}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="pages:QueueEntry">
+                    <Grid ColumnDefinitions="Auto,*" Padding="16,6" ColumnSpacing="12" Opacity="{Binding Opacity}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnEntryTapped" />
+                        </Grid.GestureRecognizers>
+                        <Border StrokeThickness="0" StrokeShape="RoundRectangle 6">
+                            <Image Source="{Binding Track.ThumbnailUrl}" WidthRequest="48" HeightRequest="48" Aspect="AspectFill" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="{Binding Track.Title}" FontSize="16" FontAttributes="{Binding TitleAttributes}" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Track.Artist}" FontSize="13" TextColor="{StaticResource Gray400}" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

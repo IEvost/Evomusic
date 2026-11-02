@@ -103,7 +103,7 @@ internal static class ItemParser
     }
 
     /// <summary>Artist names are the subtitle runs that link to artist pages.</summary>
-    private static string? ArtistFromRuns(IEnumerable<JsonNode> runs)
+    public static string? ArtistFromRuns(IEnumerable<JsonNode> runs)
     {
         var artists = runs
             .Where(r => r.Str("navigationEndpoint", "browseEndpoint", "browseEndpointContextSupportedConfigs", "browseEndpointContextMusicConfig", "pageType")

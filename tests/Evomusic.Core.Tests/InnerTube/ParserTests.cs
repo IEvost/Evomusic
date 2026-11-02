@@ -83,6 +83,30 @@ public class ParserTests
     }
 
     [Fact]
+    public void Watch_HasRadioQueueLyricsAndLikeStatus()
+    {
+        var info = WatchParser.Parse(Fixture("next"));
+
+        Assert.True(info.UpNext.Count > 10);
+        Assert.Equal("xtxjm7ciwmc", info.UpNext[0].VideoId);
+        Assert.Equal(("Группа крови", "Кино"), (info.UpNext[0].Title, info.UpNext[0].Artist));
+        Assert.All(info.UpNext, i => Assert.True(i.IsPlayable && i.Duration is not null));
+        Assert.Equal("MPLYt_OLmD8O5IYNS-1", info.LyricsBrowseId);
+        Assert.Equal(LikeStatus.Indifferent, info.LikeStatus);
+    }
+
+    [Fact]
+    public void Lyrics_ReadsTextAndSource()
+    {
+        var lyrics = WatchParser.ParseLyrics(Fixture("lyrics"));
+
+        Assert.NotNull(lyrics);
+        Assert.StartsWith("Теплое место", lyrics.Text);
+        Assert.Equal("Source: LyricFind", lyrics.Source);
+        Assert.False(lyrics.IsSynced);
+    }
+
+    [Fact]
     public void Continuation_ParsesAppendedItems()
     {
         var json = JsonNode.Parse("""

@@ -55,7 +55,7 @@ public sealed class WindowsAudioPlayer : IAudioPlayer
 		remove { }
 	}
 
-	public void Load(Uri url, Track track)
+	public void Load(Uri url, Track track, TimeSpan? knownDuration)
 	{
 		_player.Source = MediaSource.CreateFromUri(url);
 		State = PlayerState.Loading;

@@ -26,6 +26,19 @@
                 </Grid>
             </Border>
 
+            <Border
+                Padding="16,10"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                    <Label Text="Add plays to YouTube history" FontSize="16" VerticalOptions="Center" />
+                    <Switch Grid.Column="1" Grid.RowSpan="2" IsToggled="{Binding ReportPlays}" VerticalOptions="Center" />
+                    <Label Grid.Row="1" FontSize="12" TextColor="{StaticResource Gray400}"
+                           Text="Keeps your recommendations in sync with music.youtube.com." />
+                </Grid>
+            </Border>
+
             <Button
                 Text="Sign out"
                 IsVisible="{Binding IsSignedIn}"

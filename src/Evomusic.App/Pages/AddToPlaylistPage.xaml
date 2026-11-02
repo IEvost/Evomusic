@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             xmlns:models="clr-namespace:Evomusic.Core.Models;assembly=Evomusic.Core"
+             xmlns:controls="clr-namespace:Evomusic.App.Controls"
+             x:Class="Evomusic.App.Pages.AddToPlaylistPage"
+             x:DataType="pages:AddToPlaylistPage"
+             ios:Page.ModalPresentationStyle="PageSheet"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <Grid ColumnDefinitions="*,Auto" Padding="20,16,12,8">
+            <Label Text="Add to Playlist" FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="Cancel" Clicked="OnCancelClicked" BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="48,*" Padding="16,8" ColumnSpacing="12">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnNewPlaylistTapped" />
+            </Grid.GestureRecognizers>
+            <Border StrokeThickness="0" StrokeShape="RoundRectangle 6" HeightRequest="48"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                <Image HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image.Source>
+                        <controls:SymbolImageSource Name="plus" PointSize="22" Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                    </Image.Source>
+                </Image>
+            </Border>
+            <Label Grid.Column="1" Text="New Playlist…" FontSize="17" VerticalOptions="Center"
+                   TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        </Grid>
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Playlists}">
+            <CollectionView.EmptyView>
+                <Label Text="{Binding Message}" Padding="24" HorizontalTextAlignment="Center" TextColor="{StaticResource Gray400}" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:MediaItem">
+                    <Grid ColumnDefinitions="48,*" Padding="16,6" ColumnSpacing="12">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnPlaylistTapped" />
+                        </Grid.GestureRecognizers>
+                        <Border StrokeThickness="0" StrokeShape="RoundRectangle 6">
+                            <Image Source="{Binding ThumbnailUrl}" WidthRequest="48" HeightRequest="48" Aspect="AspectFill" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="{Binding Title}" FontSize="16" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Subtitle}" FontSize="13" TextColor="{StaticResource Gray400}" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

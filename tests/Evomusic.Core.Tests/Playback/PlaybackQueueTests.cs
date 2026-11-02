@@ -73,6 +73,29 @@ public class PlaybackQueueTests
     }
 
     [Fact]
+    public void InsertNext_AndAppend_PlaceTracksRelativeToCurrent()
+    {
+        var queue = new PlaybackQueue();
+        queue.Set(Tracks, 0);
+
+        queue.InsertNext([new Track("n", "N", null, null)]);
+        queue.Append([new Track("z", "Z", null, null)]);
+
+        Assert.Equal(["a", "n", "b", "c", "z"], queue.Tracks.Select(t => t.VideoId));
+        Assert.Equal("a", queue.Current?.VideoId);
+    }
+
+    [Fact]
+    public void Lrc_ParsesTimestampsAndSkipsMetadata()
+    {
+        var lines = Evomusic.Core.Lrc.LrcLibClient.Parse("[ar:Kino]\n[00:12.50] Тёплое место\n[01:02.00]Но улицы ждут\n");
+
+        Assert.Equal(
+            [new LyricLine(TimeSpan.FromSeconds(12.5), "Тёплое место"), new LyricLine(TimeSpan.FromSeconds(62), "Но улицы ждут")],
+            lines);
+    }
+
+    [Fact]
     public void Track_ArtworkUrl_RequestsLargerSize()
     {
         var track = new Track("v", "T", "A", "https://lh3.googleusercontent.com/abc=w120-h120-l90-rj");

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Evomusic.App.Controls;
 using Evomusic.App.Services;
+using Evomusic.Core.Models;
 using Evomusic.Core.Playback;
 
 namespace Evomusic.App.Pages;
@@ -45,6 +46,10 @@ public partial class NowPlayingPage : ContentPage
 
 	public ImageSource ShuffleSymbol => Symbol("shuffle", 20, primary: _playback.IsShuffled);
 
+	public ImageSource LikeSymbol => _playback.LikeStatus == LikeStatus.Like
+		? new SymbolImageSource { Name = "hand.thumbsup.fill", PointSize = 22, Color = Color.FromArgb("#ac99ea") }
+		: Symbol("hand.thumbsup", 22, primary: false);
+
 	public ImageSource RepeatSymbol => Symbol(_playback.Repeat == RepeatMode.One ? "repeat.1" : "repeat", 20, primary: _playback.Repeat != RepeatMode.Off);
 
 	protected override void OnAppearing()
@@ -72,7 +77,7 @@ public partial class NowPlayingPage : ContentPage
 		foreach (var property in new[]
 		{
 			nameof(TrackTitle), nameof(Artist), nameof(ArtworkUrl), nameof(Error), nameof(HasError), nameof(IsLoadingTrack),
-			nameof(PlayPauseSymbol), nameof(ShuffleSymbol), nameof(RepeatSymbol),
+			nameof(PlayPauseSymbol), nameof(ShuffleSymbol), nameof(RepeatSymbol), nameof(LikeSymbol),
 		})
 		{
 			OnPropertyChanged(property);
@@ -109,6 +114,24 @@ public partial class NowPlayingPage : ContentPage
 	private void OnShuffleClicked(object? sender, EventArgs e) => _playback.ToggleShuffle();
 
 	private void OnRepeatClicked(object? sender, EventArgs e) => _playback.CycleRepeat();
+
+	private async void OnLikeClicked(object? sender, EventArgs e) => await _playback.ToggleLikeAsync();
+
+	private async void OnLyricsClicked(object? sender, EventArgs e) => await Navigator.ShowLyricsAsync();
+
+	private async void OnMoreClicked(object? sender, EventArgs e)
+	{
+		if (_playback.Current is not { } track)
+			return;
+
+		const string addToPlaylist = "Add to Playlist…";
+		const string startRadio = "Start Radio";
+		var choice = await DisplayActionSheetAsync(track.Title, "Cancel", null, addToPlaylist, startRadio);
+		if (choice == addToPlaylist)
+			await Navigator.ShowAddToPlaylistAsync(track);
+		else if (choice == startRadio)
+			await _playback.StartRadioFromCurrentAsync();
+	}
 
 	private async void OnQueueClicked(object? sender, EventArgs e) =>
 		await Navigation.PushModalAsync(new QueuePage(_playback));

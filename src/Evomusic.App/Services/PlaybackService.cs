@@ -12,16 +12,21 @@ public sealed class PlaybackService : INotifyPropertyChanged
 {
 	private static readonly TimeSpan RestartThreshold = TimeSpan.FromSeconds(3);
 
+	public const string ReportPlaysPreference = "report_plays";
+
 	private readonly IAudioPlayer _player;
 	private readonly IStreamResolver _resolver;
+	private readonly SessionService _session;
 	private readonly ILogger<PlaybackService> _logger;
 	private CancellationTokenSource? _loadCts;
 	private bool _resolving;
+	private bool _radioLoading;
 
-	public PlaybackService(IAudioPlayer player, IStreamResolver resolver, ILogger<PlaybackService> logger)
+	public PlaybackService(IAudioPlayer player, IStreamResolver resolver, SessionService session, ILogger<PlaybackService> logger)
 	{
 		_player = player;
 		_resolver = resolver;
+		_session = session;
 		_logger = logger;
 
 		_player.StateChanged += (_, _) => OnMain(NotifyState);
@@ -55,8 +60,59 @@ public sealed class PlaybackService : INotifyPropertyChanged
 
 	public RepeatMode Repeat => Queue.Repeat;
 
+	/// <summary>Rating of the current track on the account (from the <c>next</c> endpoint).</summary>
+	public LikeStatus LikeStatus { get; private set; }
+
+	/// <summary>YT Music lyrics page of the current track, if it has one.</summary>
+	public string? LyricsBrowseId { get; private set; }
+
 	/// <summary>Raised when the queue's order or contents change (shuffle, new queue).</summary>
 	public event EventHandler? QueueChanged;
+
+	public void PlayNext(Track track)
+	{
+		var wasEmpty = Current is null;
+		Queue.InsertNext([track]);
+		QueueChanged?.Invoke(this, EventArgs.Empty);
+		if (wasEmpty)
+			_ = LoadCurrentAsync();
+	}
+
+	public void AddToQueue(Track track)
+	{
+		var wasEmpty = Current is null;
+		Queue.Append([track]);
+		QueueChanged?.Invoke(this, EventArgs.Empty);
+		if (wasEmpty)
+			_ = LoadCurrentAsync();
+	}
+
+	/// <summary>Plays the track followed by its YT Music radio (same mix the web player builds).</summary>
+	public async Task StartRadioAsync(Track track)
+	{
+		await PlayAsync([track], 0);
+		await AppendRadioAsync(track);
+	}
+
+	public async Task ToggleLikeAsync()
+	{
+		if (Current is not { } track || _session.Music is not { } music)
+			return;
+
+		var target = LikeStatus == LikeStatus.Like ? LikeStatus.Indifferent : LikeStatus.Like;
+		var previous = LikeStatus;
+		SetLikeStatus(target);
+		try
+		{
+			await music.RateAsync(track.VideoId, target);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Rating {VideoId} failed", track.VideoId);
+			SetLikeStatus(previous);
+			SetError($"Could not update like: {ex.Message}");
+		}
+	}
 
 	public async Task PlayAsync(IReadOnlyList<Track> tracks, int startIndex, bool shuffle = false)
 	{
@@ -90,6 +146,17 @@ public sealed class PlaybackService : INotifyPropertyChanged
 	}
 
 	public void Seek(TimeSpan position) => _player.Seek(position);
+
+	/// <summary>Plays the radio of whatever is playing now, replacing the rest of the queue.</summary>
+	public async Task StartRadioFromCurrentAsync()
+	{
+		if (Current is not { } track)
+			return;
+
+		Queue.Set([track], 0);
+		QueueChanged?.Invoke(this, EventArgs.Empty);
+		await AppendRadioAsync(track);
+	}
 
 	public void TogglePlayPause()
 	{
@@ -145,8 +212,9 @@ public sealed class PlaybackService : INotifyPropertyChanged
 				return;
 
 			_logger.LogInformation("Playing {VideoId}: {Container}/{Codec} {Bitrate} bps", track.VideoId, stream.Container, stream.Codec, stream.BitsPerSecond);
-			_player.Load(stream.Url, track);
+			_player.Load(stream.Url, track, stream.Duration);
 			_player.Play();
+			_ = OnTrackStartedAsync(track, cts.Token);
 		}
 		catch (OperationCanceledException) when (cts.IsCancellationRequested)
 		{
@@ -165,6 +233,91 @@ public sealed class PlaybackService : INotifyPropertyChanged
 				NotifyState();
 			}
 		}
+	}
+
+	/// <summary>
+	/// Side work for a started track, all best-effort: rating and lyrics link, history reporting,
+	/// and topping up the queue with radio when it is about to run out (like YT Music autoplay).
+	/// </summary>
+	private async Task OnTrackStartedAsync(Track track, CancellationToken cancellationToken)
+	{
+		SetLikeStatus(LikeStatus.Indifferent);
+		LyricsBrowseId = null;
+		Notify(nameof(LyricsBrowseId));
+		if (_session.Music is not { } music)
+			return;
+
+		try
+		{
+			var info = await music.GetWatchInfoAsync(track.VideoId, cancellationToken);
+			if (cancellationToken.IsCancellationRequested)
+				return;
+
+			SetLikeStatus(info.LikeStatus);
+			LyricsBrowseId = info.LyricsBrowseId;
+			Notify(nameof(LyricsBrowseId));
+
+			var isLast = Queue.CurrentIndex == Queue.Tracks.Count - 1;
+			if (isLast && Queue.Repeat == RepeatMode.Off)
+				AppendRadio(track, info.UpNext);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			_logger.LogWarning(ex, "Watch info for {VideoId} failed", track.VideoId);
+		}
+
+		if (Preferences.Default.Get(ReportPlaysPreference, true))
+		{
+			try
+			{
+				await music.ReportPlaybackAsync(track.VideoId, cancellationToken);
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				_logger.LogWarning(ex, "Reporting playback of {VideoId} failed", track.VideoId);
+			}
+		}
+	}
+
+	private async Task AppendRadioAsync(Track seed)
+	{
+		if (_radioLoading || _session.Music is not { } music)
+			return;
+
+		_radioLoading = true;
+		try
+		{
+			AppendRadio(seed, (await music.GetWatchInfoAsync(seed.VideoId)).UpNext);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Radio for {VideoId} failed", seed.VideoId);
+		}
+		finally
+		{
+			_radioLoading = false;
+		}
+	}
+
+	private void AppendRadio(Track seed, IEnumerable<MediaItem> upNext)
+	{
+		var queued = Queue.Tracks.Select(t => t.VideoId).ToHashSet();
+		var radio = upNext
+			.Select(Track.FromMediaItem)
+			.OfType<Track>()
+			.Where(t => t.VideoId != seed.VideoId && queued.Add(t.VideoId))
+			.ToList();
+		if (radio.Count == 0)
+			return;
+
+		Queue.Append(radio);
+		QueueChanged?.Invoke(this, EventArgs.Empty);
+	}
+
+	private void SetLikeStatus(LikeStatus status)
+	{
+		LikeStatus = status;
+		Notify(nameof(LikeStatus));
 	}
 
 	private void SetError(string? error)

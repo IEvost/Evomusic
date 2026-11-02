@@ -17,6 +17,9 @@ public sealed class AvAudioPlayer : IAudioPlayer
 
 	private readonly AVPlayer _player = new() { AutomaticallyWaitsToMinimizeStalling = true };
 	private readonly List<IDisposable> _itemObservers = [];
+	private NSObject? _endObserver;
+	private TimeSpan? _knownDuration;
+	private bool _endReported;
 	private Track? _track;
 	private MPMediaItemArtwork? _artwork;
 	private bool _wantsToPlay;
@@ -37,7 +40,7 @@ public sealed class AvAudioPlayer : IAudioPlayer
 
 	public TimeSpan Position => ToTimeSpan(_player.CurrentTime);
 
-	public TimeSpan Duration => _player.CurrentItem is { } item ? ToTimeSpan(item.Duration) : TimeSpan.Zero;
+	public TimeSpan Duration => _knownDuration ?? (_player.CurrentItem is { } item ? ToTimeSpan(item.Duration) : TimeSpan.Zero);
 
 	public event EventHandler? StateChanged;
 
@@ -49,15 +52,26 @@ public sealed class AvAudioPlayer : IAudioPlayer
 
 	public event EventHandler? PreviousRequested;
 
-	public void Load(Uri url, Track track)
+	public void Load(Uri url, Track track, TimeSpan? knownDuration)
 	{
 		ClearItemObservers();
 		_track = track;
 		_artwork = null;
+		_knownDuration = knownDuration;
+		_endReported = false;
 
-		var item = new AVPlayerItem(new NSUrl(url.AbsoluteUri));
+		var asset = new AVUrlAsset(new NSUrl(url.AbsoluteUri), new AVUrlAssetOptions { PreferPreciseDurationAndTiming = true });
+		var item = new AVPlayerItem(asset);
 		_itemObservers.Add(item.AddObserver("status", NSKeyValueObservingOptions.New, _ => OnItemStatusChanged(item)));
-		_itemObservers.Add(AVPlayerItem.Notifications.ObserveDidPlayToEndTime(item, (_, _) => Ended?.Invoke(this, EventArgs.Empty)));
+		_itemObservers.Add(AVPlayerItem.Notifications.ObserveDidPlayToEndTime(item, (_, _) => ReportEnded()));
+
+		// AVPlayer reads YouTube's fragmented MP4 as roughly twice as long, so it never reaches its own "end"
+		// and stalls in silence. End the track at the length YouTube reports instead.
+		if (knownDuration is { } duration && duration > TimeSpan.FromSeconds(1))
+		{
+			var end = NSValue.FromCMTime(CMTime.FromSeconds(duration.TotalSeconds - 0.25, 1000));
+			_endObserver = (NSObject)_player.AddBoundaryTimeObserver([end], CoreFoundation.DispatchQueue.MainQueue, ReportEnded);
+		}
 		_itemObservers.Add(AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(item, (_, e) =>
 			Fail(e.Error?.LocalizedDescription ?? "Playback stopped unexpectedly.")));
 
@@ -84,7 +98,11 @@ public sealed class AvAudioPlayer : IAudioPlayer
 
 	public void Seek(TimeSpan position)
 	{
-		_player.Seek(CMTime.FromSeconds(position.TotalSeconds, 1000), _ => UpdateNowPlaying());
+		// Seeking past the real end would skip the end boundary and leave the player stalled.
+		if (_knownDuration is { } duration && position > duration - TimeSpan.FromSeconds(1))
+			position = duration - TimeSpan.FromSeconds(1);
+
+		_player.Seek(CMTime.FromSeconds(Math.Max(position.TotalSeconds, 0), 1000), _ => UpdateNowPlaying());
 	}
 
 	public void Stop()
@@ -95,6 +113,15 @@ public sealed class AvAudioPlayer : IAudioPlayer
 		_track = null;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = new MPNowPlayingInfo();
 		SetState(PlayerState.Idle);
+	}
+
+	private void ReportEnded()
+	{
+		if (_endReported)
+			return;
+
+		_endReported = true;
+		Ended?.Invoke(this, EventArgs.Empty);
 	}
 
 	private void OnItemStatusChanged(AVPlayerItem item)
@@ -225,6 +252,12 @@ public sealed class AvAudioPlayer : IAudioPlayer
 		foreach (var observer in _itemObservers)
 			observer.Dispose();
 		_itemObservers.Clear();
+
+		if (_endObserver is not null)
+		{
+			_player.RemoveTimeObserver(_endObserver);
+			_endObserver = null;
+		}
 	}
 
 	private static TimeSpan ToTimeSpan(CMTime time) =>

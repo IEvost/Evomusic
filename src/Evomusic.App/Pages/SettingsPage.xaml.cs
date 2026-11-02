@@ -23,6 +23,12 @@ public partial class SettingsPage : ContentPage
 
 	public bool IsSignedIn => _session.IsSignedIn;
 
+	public bool ReportPlays
+	{
+		get => Preferences.Default.Get(PlaybackService.ReportPlaysPreference, true);
+		set => Preferences.Default.Set(PlaybackService.ReportPlaysPreference, value);
+	}
+
 	public string VersionText => $"Evomusic {AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})";
 
 	protected override async void OnAppearing()

@@ -26,15 +26,23 @@
             <Image Source="{Binding ArtworkUrl}" Aspect="AspectFill" HeightRequest="{Binding Width, Source={RelativeSource Self}, x:DataType=Image}" />
         </Border>
 
-        <VerticalStackLayout Grid.Row="2" Spacing="2">
-            <Label Text="{Binding TrackTitle}" FontSize="22" FontAttributes="Bold" LineBreakMode="TailTruncation" />
-            <Label
-                Text="{Binding Artist}"
-                FontSize="18"
-                TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                LineBreakMode="TailTruncation" />
-            <Label Text="{Binding Error}" IsVisible="{Binding HasError}" FontSize="13" TextColor="Red" />
-        </VerticalStackLayout>
+        <Grid Grid.Row="2" ColumnDefinitions="*,44,44" ColumnSpacing="4">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{Binding TrackTitle}" FontSize="22" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                <Label
+                    Text="{Binding Artist}"
+                    FontSize="18"
+                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    LineBreakMode="TailTruncation" />
+                <Label Text="{Binding Error}" IsVisible="{Binding HasError}" FontSize="13" TextColor="Red" />
+            </VerticalStackLayout>
+            <ImageButton Grid.Column="1" Clicked="OnLikeClicked" Source="{Binding LikeSymbol}" VerticalOptions="Center" />
+            <ImageButton Grid.Column="2" Clicked="OnMoreClicked" VerticalOptions="Center">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="ellipsis.circle" PointSize="22" Color="{StaticResource Gray400}" />
+                </ImageButton.Source>
+            </ImageButton>
+        </Grid>
 
         <!-- Progress -->
         <VerticalStackLayout Grid.Row="3" Spacing="0">
@@ -71,14 +79,19 @@
         </Grid>
 
         <!-- Modes and queue -->
-        <Grid Grid.Row="5" ColumnDefinitions="*,*,*" HeightRequest="44">
+        <Grid Grid.Row="5" ColumnDefinitions="*,*,*,*" HeightRequest="44">
             <ImageButton Clicked="OnShuffleClicked" HorizontalOptions="Center" Source="{Binding ShuffleSymbol}" />
-            <ImageButton Grid.Column="1" Clicked="OnQueueClicked" HorizontalOptions="Center">
+            <ImageButton Grid.Column="1" Clicked="OnLyricsClicked" HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <controls:SymbolImageSource Name="quote.bubble" PointSize="20" Color="{StaticResource Gray400}" />
+                </ImageButton.Source>
+            </ImageButton>
+            <ImageButton Grid.Column="2" Clicked="OnQueueClicked" HorizontalOptions="Center">
                 <ImageButton.Source>
                     <controls:SymbolImageSource Name="list.bullet" PointSize="20" Color="{StaticResource Gray400}" />
                 </ImageButton.Source>
             </ImageButton>
-            <ImageButton Grid.Column="2" Clicked="OnRepeatClicked" HorizontalOptions="Center" Source="{Binding RepeatSymbol}" />
+            <ImageButton Grid.Column="3" Clicked="OnRepeatClicked" HorizontalOptions="Center" Source="{Binding RepeatSymbol}" />
         </Grid>
     </Grid>
 

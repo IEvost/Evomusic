@@ -38,6 +38,34 @@ public partial class RowTemplates : ResourceDictionary
 			await Navigator.OpenPageAsync(link.BrowseId, link.Title);
 	}
 
+	// Context menu actions only apply to songs and videos; albums/playlists ignore them.
+	private void OnPlayNextClicked(object? sender, EventArgs e)
+	{
+		if (MenuTrack(sender) is { } track)
+			Navigator.Playback.PlayNext(track);
+	}
+
+	private void OnAddToQueueClicked(object? sender, EventArgs e)
+	{
+		if (MenuTrack(sender) is { } track)
+			Navigator.Playback.AddToQueue(track);
+	}
+
+	private async void OnStartRadioClicked(object? sender, EventArgs e)
+	{
+		if (MenuTrack(sender) is { } track)
+			await Navigator.Playback.StartRadioAsync(track);
+	}
+
+	private async void OnAddToPlaylistClicked(object? sender, EventArgs e)
+	{
+		if (MenuTrack(sender) is { } track)
+			await Navigator.ShowAddToPlaylistAsync(track);
+	}
+
+	private static Track? MenuTrack(object? sender) =>
+		(sender as MenuItem)?.CommandParameter is MediaItem item ? Track.FromMediaItem(item) : null;
+
 	private async void OnPlayAllClicked(object? sender, EventArgs e) => await PlayAllAsync(sender, shuffle: false);
 
 	private async void OnShuffleAllClicked(object? sender, EventArgs e) => await PlayAllAsync(sender, shuffle: true);

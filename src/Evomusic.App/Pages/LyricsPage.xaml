@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             x:Class="Evomusic.App.Pages.LyricsPage"
+             x:DataType="pages:LyricsPage"
+             ios:Page.ModalPresentationStyle="PageSheet"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Grid ColumnDefinitions="*,Auto" Padding="20,16,12,8">
+            <VerticalStackLayout VerticalOptions="Center">
+                <Label Text="{Binding TrackTitle}" FontSize="18" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                <Label Text="{Binding TrackArtist}" FontSize="14" TextColor="{StaticResource Gray400}" LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+            <Button Grid.Column="1" Text="Done" Clicked="OnDoneClicked" BackgroundColor="Transparent" FontAttributes="Bold"
+                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        </Grid>
+
+        <!-- Synced: one line per row, current line highlighted; tap a line to jump there. -->
+        <CollectionView x:Name="LinesView" Grid.Row="1" ItemsSource="{Binding Lines}" IsVisible="{Binding IsSynced}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="pages:LyricRow">
+                    <Label Text="{Binding Text}" Padding="24,8" FontSize="24" FontAttributes="Bold" Opacity="{Binding Opacity}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLineTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Plain text -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding IsPlain}">
+            <Label Text="{Binding PlainText}" Padding="24,8" FontSize="20" LineHeight="1.3" />
+        </ScrollView>
+
+        <Label Grid.Row="2" Text="{Binding SourceText}" Padding="24,8,24,20" FontSize="12" TextColor="{StaticResource Gray400}" />
+    </Grid>
+
+</ContentPage>

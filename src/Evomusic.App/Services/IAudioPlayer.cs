@@ -32,7 +32,8 @@ public interface IAudioPlayer
 
 	event EventHandler? PreviousRequested;
 
-	void Load(Uri url, Track track);
+	/// <summary>Loads a stream. <paramref name="knownDuration"/> overrides the container's (unreliable) duration.</summary>
+	void Load(Uri url, Track track, TimeSpan? knownDuration);
 
 	void Play();
 

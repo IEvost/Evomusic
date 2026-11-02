@@ -104,6 +104,13 @@ public sealed class InnerTubeClient : IDisposable
         return JsonNode.Parse(json) ?? throw new InnerTubeException($"Empty response from '{endpoint}'.");
     }
 
+    /// <summary>Fires a signed-in GET (playback tracking pings) with the session cookies.</summary>
+    public async Task PingAsync(Uri url, CancellationToken cancellationToken = default)
+    {
+        using var request = CreateRequest(HttpMethod.Get, url);
+        await SendAsync(request, cancellationToken);
+    }
+
     public void Dispose() => _http.Dispose();
 
     private HttpRequestMessage CreateRequest(HttpMethod method, Uri uri)

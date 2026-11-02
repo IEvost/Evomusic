@@ -32,6 +32,16 @@ public static class Navigator
 			await Services.GetRequiredService<PlaybackService>().PlayAsync(tracks, shuffle ? Random.Shared.Next(tracks.Count) : 0, shuffle);
 	}
 
+	public static Task ShowAddToPlaylistAsync(Track track) =>
+		Shell.Current.Navigation.PushModalAsync(new AddToPlaylistPage(Services.GetRequiredService<SessionService>(), track));
+
+	public static Task ShowLyricsAsync() =>
+		Shell.Current.Navigation.PushModalAsync(new LyricsPage(
+			Services.GetRequiredService<PlaybackService>(),
+			Services.GetRequiredService<SessionService>()));
+
+	public static PlaybackService Playback => Services.GetRequiredService<PlaybackService>();
+
 	public static Task ShowNowPlayingAsync() =>
 		Shell.Current.Navigation.PushModalAsync(new NowPlayingPage(Services.GetRequiredService<PlaybackService>()));
 }

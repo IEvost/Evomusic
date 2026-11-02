@@ -31,12 +31,16 @@ public static class PlayerResponseParser
 
         unplayableReason = null;
         var mimeType = best.Str("mimeType")!;
+        var durationMs = long.TryParse(best.Str("approxDurationMs"), out var ms) ? ms
+            : long.TryParse(response.Str("videoDetails", "lengthSeconds"), out var seconds) ? seconds * 1000
+            : 0;
         return new AudioStream(
             new Uri(best.Str("url")!),
             "mp4",
             ExtractCodec(mimeType),
             best.At("bitrate")?.GetValue<long>() ?? 0,
-            long.TryParse(best.Str("contentLength"), out var size) ? size : 0);
+            long.TryParse(best.Str("contentLength"), out var size) ? size : 0,
+            durationMs > 0 ? TimeSpan.FromMilliseconds(durationMs) : null);
     }
 
     // audio/mp4; codecs="mp4a.40.2" -> mp4a.40.2

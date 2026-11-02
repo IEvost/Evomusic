@@ -55,6 +55,34 @@ public sealed class PlaybackQueue(Random? random = null)
         CurrentIndex = current is null ? -1 : _tracks.IndexOf(current);
     }
 
+    /// <summary>"Play next": inserts right after the current track.</summary>
+    public void InsertNext(IEnumerable<Track> tracks)
+    {
+        var list = tracks.ToList();
+        if (Current is null)
+        {
+            Set(list, 0);
+            return;
+        }
+
+        _tracks.InsertRange(CurrentIndex + 1, list);
+        _originalOrder.InsertRange(_originalOrder.IndexOf(Current) + 1, list);
+    }
+
+    /// <summary>"Add to queue" / radio continuation: appends at the end.</summary>
+    public void Append(IEnumerable<Track> tracks)
+    {
+        var list = tracks.ToList();
+        if (Current is null)
+        {
+            Set(list, 0);
+            return;
+        }
+
+        _tracks.AddRange(list);
+        _originalOrder.AddRange(list);
+    }
+
     public bool MoveTo(int index)
     {
         if (index < 0 || index >= _tracks.Count)

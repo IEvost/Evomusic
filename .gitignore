@@ -9,3 +9,6 @@ obj/
 
 # OS-generated files
 .DS_Store
+
+# Downloaded CI artifacts
+artifacts/

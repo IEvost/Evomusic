@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Evomusic.App.MainPage"
+             Title="Evomusic">
+
+    <VerticalStackLayout
+        Padding="30,0"
+        Spacing="12"
+        VerticalOptions="Center">
+        <Label
+            Text="Evomusic"
+            Style="{StaticResource Headline}"
+            SemanticProperties.HeadingLevel="Level1" />
+
+        <Label
+            x:Name="BuildInfoLabel"
+            Style="{StaticResource SubHeadline}" />
+    </VerticalStackLayout>
+
+</ContentPage>

@@ -76,14 +76,9 @@
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnItemRowTapped" />
             </Grid.GestureRecognizers>
-            <FlyoutBase.ContextFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Text="Play Next" Clicked="OnPlayNextClicked" CommandParameter="{Binding Item}" />
-                    <MenuFlyoutItem Text="Add to Queue" Clicked="OnAddToQueueClicked" CommandParameter="{Binding Item}" />
-                    <MenuFlyoutItem Text="Start Radio" Clicked="OnStartRadioClicked" CommandParameter="{Binding Item}" />
-                    <MenuFlyoutItem Text="Add to Playlist…" Clicked="OnAddToPlaylistClicked" CommandParameter="{Binding Item}" />
-                </MenuFlyout>
-            </FlyoutBase.ContextFlyout>
+            <Grid.Behaviors>
+                <controls:LongPressBehavior LongPressed="OnLongPressed" />
+            </Grid.Behaviors>
             <Border
                 IsVisible="{Binding ShowArtwork}"
                 StrokeThickness="0"
@@ -127,14 +122,9 @@
                             <VerticalStackLayout.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCardTapped" />
                             </VerticalStackLayout.GestureRecognizers>
-                            <FlyoutBase.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem Text="Play Next" Clicked="OnPlayNextClicked" CommandParameter="{Binding .}" />
-                                    <MenuFlyoutItem Text="Add to Queue" Clicked="OnAddToQueueClicked" CommandParameter="{Binding .}" />
-                                    <MenuFlyoutItem Text="Start Radio" Clicked="OnStartRadioClicked" CommandParameter="{Binding .}" />
-                                    <MenuFlyoutItem Text="Add to Playlist…" Clicked="OnAddToPlaylistClicked" CommandParameter="{Binding .}" />
-                                </MenuFlyout>
-                            </FlyoutBase.ContextFlyout>
+                            <VerticalStackLayout.Behaviors>
+                                <controls:LongPressBehavior LongPressed="OnLongPressed" />
+                            </VerticalStackLayout.Behaviors>
                             <Border StrokeThickness="0" StrokeShape="{Binding Kind, Converter={StaticResource ArtworkShapeConverter}}">
                                 <Image Source="{Binding ThumbnailUrl}" WidthRequest="150" HeightRequest="150" Aspect="AspectFill" />
                             </Border>

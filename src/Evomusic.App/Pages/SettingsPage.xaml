@@ -38,6 +38,7 @@
                            Text="Keeps your recommendations in sync with music.youtube.com." />
                 </Grid>
             </Border>
+            <Label Text="{Binding LastHistoryReport}" Margin="16,-12,16,0" FontSize="12" TextColor="{StaticResource Gray400}" />
 
             <Button
                 Text="Sign out"

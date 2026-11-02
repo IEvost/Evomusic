@@ -33,6 +33,8 @@ public sealed class WindowsAudioPlayer : IAudioPlayer
 
 	public PlayerState State { get; private set; } = PlayerState.Idle;
 
+	public bool IsPlayRequested => State is PlayerState.Playing or PlayerState.Loading;
+
 	public TimeSpan Position => _player.PlaybackSession.Position;
 
 	public TimeSpan Duration => _player.PlaybackSession.NaturalDuration;

@@ -16,6 +16,9 @@ public interface IAudioPlayer
 {
 	PlayerState State { get; }
 
+	/// <summary>The user's intent (play pressed and not paused), independent of buffering.</summary>
+	bool IsPlayRequested { get; }
+
 	TimeSpan Position { get; }
 
 	TimeSpan Duration { get; }

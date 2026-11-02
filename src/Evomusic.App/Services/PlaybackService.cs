@@ -44,7 +44,8 @@ public sealed class PlaybackService : INotifyPropertyChanged
 
 	public bool HasTrack => Current is not null;
 
-	public bool IsPlaying => _player.State == PlayerState.Playing;
+	/// <summary>Drives the play/pause icon: follows the user's intent, so buffering never locks the button.</summary>
+	public bool IsPlaying => _player.State != PlayerState.Failed && (_player.IsPlayRequested || _resolving);
 
 	public bool IsBusy => _resolving || _player.State == PlayerState.Loading;
 
@@ -62,6 +63,9 @@ public sealed class PlaybackService : INotifyPropertyChanged
 
 	/// <summary>Rating of the current track on the account (from the <c>next</c> endpoint).</summary>
 	public LikeStatus LikeStatus { get; private set; }
+
+	/// <summary>Outcome of the last attempt to add a play to the YouTube history (shown in Settings).</summary>
+	public string LastHistoryReport { get; private set; } = "No plays reported yet.";
 
 	/// <summary>YT Music lyrics page of the current track, if it has one.</summary>
 	public string? LyricsBrowseId { get; private set; }
@@ -160,12 +164,14 @@ public sealed class PlaybackService : INotifyPropertyChanged
 
 	public void TogglePlayPause()
 	{
-		if (_player.State == PlayerState.Playing)
-			_player.Pause();
-		else if (_player.State is PlayerState.Paused)
-			_player.Play();
-		else if (_player.State is PlayerState.Failed or PlayerState.Idle && Current is not null)
+		if (_player.State is PlayerState.Failed or PlayerState.Idle && !_resolving && Current is not null)
 			_ = LoadCurrentAsync();
+		else if (_player.IsPlayRequested)
+			_player.Pause();
+		else
+			_player.Play();
+
+		NotifyState();
 	}
 
 	public Task NextAsync() => AdvanceAsync(afterEnd: false);
@@ -271,11 +277,15 @@ public sealed class PlaybackService : INotifyPropertyChanged
 			try
 			{
 				await music.ReportPlaybackAsync(track.VideoId, cancellationToken);
+				LastHistoryReport = $"Added \"{track.Title}\" at {DateTime.Now:HH:mm}.";
 			}
 			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				_logger.LogWarning(ex, "Reporting playback of {VideoId} failed", track.VideoId);
+				LastHistoryReport = $"Failed for \"{track.Title}\": {ex.Message}";
 			}
+
+			Notify(nameof(LastHistoryReport));
 		}
 	}
 

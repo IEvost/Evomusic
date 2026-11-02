@@ -6,11 +6,18 @@ namespace Evomusic.App.Pages;
 public partial class SettingsPage : ContentPage
 {
 	private readonly SessionService _session;
+	private readonly PlaybackService _playback;
 
-	public SettingsPage(SessionService session)
+	public SettingsPage(SessionService session, PlaybackService playback)
 	{
 		InitializeComponent();
 		_session = session;
+		_playback = playback;
+		_playback.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == nameof(PlaybackService.LastHistoryReport))
+				OnPropertyChanged(nameof(LastHistoryReport));
+		};
 		_session.SessionChanged += async (_, _) => await LoadAccountAsync();
 		BindingContext = this;
 	}
@@ -22,6 +29,8 @@ public partial class SettingsPage : ContentPage
 	public string? PhotoUrl { get; private set; }
 
 	public bool IsSignedIn => _session.IsSignedIn;
+
+	public string LastHistoryReport => _playback.LastHistoryReport;
 
 	public bool ReportPlays
 	{

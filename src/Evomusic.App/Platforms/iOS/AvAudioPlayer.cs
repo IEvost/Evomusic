@@ -17,6 +17,12 @@ public sealed class AvAudioPlayer : IAudioPlayer
 
 	private readonly AVPlayer _player = new() { AutomaticallyWaitsToMinimizeStalling = true };
 	private readonly List<IDisposable> _itemObservers = [];
+
+	// KVO and time observers must stay referenced: if the GC collects them, state updates silently stop
+	// and the UI freezes in its last state (the "stuck play/pause button" bug).
+	private readonly IDisposable _timeControlObserver;
+	private readonly NSObject _periodicObserver;
+	private readonly NSObject _interruptionObserver;
 	private NSObject? _endObserver;
 	private TimeSpan? _knownDuration;
 	private bool _endReported;
@@ -29,14 +35,21 @@ public sealed class AvAudioPlayer : IAudioPlayer
 		var session = AVAudioSession.SharedInstance();
 		session.SetCategory(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.AllowAirPlay | AVAudioSessionCategoryOptions.AllowBluetoothA2DP);
 
-		_player.AddObserver("timeControlStatus", NSKeyValueObservingOptions.New, _ => RaiseStateChanged());
-		_player.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1000), CoreFoundation.DispatchQueue.MainQueue, _ => UpdateNowPlaying());
+		_timeControlObserver = _player.AddObserver("timeControlStatus", NSKeyValueObservingOptions.New, _ => RaiseStateChanged());
+		_periodicObserver = _player.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1000), CoreFoundation.DispatchQueue.MainQueue, _ =>
+		{
+			// Periodic re-sync as a safety net in case a state notification is ever missed.
+			RaiseStateChanged();
+			UpdateNowPlaying();
+		});
 
-		AVAudioSession.Notifications.ObserveInterruption(OnInterruption);
+		_interruptionObserver = AVAudioSession.Notifications.ObserveInterruption(OnInterruption);
 		RegisterRemoteCommands();
 	}
 
 	public PlayerState State { get; private set; } = PlayerState.Idle;
+
+	public bool IsPlayRequested => _wantsToPlay;
 
 	public TimeSpan Position => ToTimeSpan(_player.CurrentTime);
 

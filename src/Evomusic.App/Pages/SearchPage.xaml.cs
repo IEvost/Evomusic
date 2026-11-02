@@ -65,7 +65,23 @@ public partial class SearchPage : ContentPage
 		}
 	}
 
-	private async void OnSearchPressed(object? sender, EventArgs e) => await SearchAsync(QueryBar.Text);
+	private async void OnSearchPressed(object? sender, EventArgs e)
+	{
+		QueryBar.Unfocus();
+		await SearchAsync(QueryBar.Text);
+	}
+
+	private void OnResultsScrolled(object? sender, ItemsViewScrolledEventArgs e)
+	{
+		if (QueryBar.IsFocused)
+			QueryBar.Unfocus();
+	}
+
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+		QueryBar.Unfocus();
+	}
 
 	private async void OnSuggestionSelected(object? sender, SelectionChangedEventArgs e)
 	{

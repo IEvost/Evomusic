@@ -18,6 +18,8 @@ public sealed class YouTubeMusicService(InnerTubeClient client)
 
     private const string CpnAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
+    private static readonly SignatureTimestamp SignatureTimestamps = new(new HttpClient { Timeout = TimeSpan.FromSeconds(20) });
+
     public async Task<AccountInfo?> GetAccountAsync(CancellationToken cancellationToken = default) =>
         AccountParser.Parse(await client.PostAsync("account/account_menu", cancellationToken: cancellationToken));
 
@@ -115,12 +117,25 @@ public sealed class YouTubeMusicService(InnerTubeClient client)
     /// </summary>
     public async Task ReportPlaybackAsync(string videoId, CancellationToken cancellationToken = default)
     {
-        var player = await client.PostAsync("player", new JsonObject { ["videoId"] = videoId }, cancellationToken);
-        if (player.Str("playbackTracking", "videostatsPlaybackUrl", "baseUrl") is not { } baseUrl)
-            return;
+        var body = new JsonObject { ["videoId"] = videoId };
+        if (await SignatureTimestamps.GetAsync(cancellationToken) is { } sts)
+        {
+            body["playbackContext"] = new JsonObject
+            {
+                ["contentPlaybackContext"] = new JsonObject { ["signatureTimestamp"] = sts },
+            };
+        }
 
+        var player = await client.PostAsync("player", body, cancellationToken);
+        if (player.Str("playbackTracking", "videostatsPlaybackUrl", "baseUrl") is not { } baseUrl)
+        {
+            var reason = player.Str("playabilityStatus", "reason") ?? player.Str("playabilityStatus", "status") ?? "no tracking URL";
+            throw new InnerTubeException($"Play not recorded: {reason}");
+        }
+
+        // Same parameters ytmusicapi's add_history_item sends.
         var cpn = string.Concat(Enumerable.Range(0, 16).Select(_ => CpnAlphabet[Random.Shared.Next(CpnAlphabet.Length)]));
-        await client.PingAsync(new Uri($"{baseUrl}&ver=2&cpn={cpn}&fs=0&rt=0"), cancellationToken);
+        await client.PingAsync(new Uri($"{baseUrl}&ver=2&c=WEB_REMIX&cpn={cpn}"), cancellationToken);
     }
 
     private static string StripVl(string browseId) =>

@@ -39,7 +39,6 @@ public partial class MiniPlayerView : ContentView
 			PointSize = 22,
 			Color = dark ? Colors.White : Colors.Black,
 		};
-		PlayPauseButton.IsVisible = !_playback.IsBusy;
 	}
 
 	private void OnPlayPauseClicked(object? sender, EventArgs e) => _playback?.TogglePlayPause();

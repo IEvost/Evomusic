@@ -8,8 +8,17 @@ public static class Navigator
 {
 	private static IServiceProvider Services => IPlatformApplication.Current!.Services;
 
+	/// <summary>Dismisses the on-screen keyboard wherever it is open (e.g. still up after typing a search).</summary>
+	public static void HideKeyboard()
+	{
+#if IOS
+		UIKit.UIApplication.SharedApplication.SendAction(new ObjCRuntime.Selector("resignFirstResponder"), null, null, null);
+#endif
+	}
+
 	public static async Task OpenAsync(MediaItem item, IReadOnlyList<MediaItem> context)
 	{
+		HideKeyboard();
 		if (item.IsPlayable)
 		{
 			var tracks = context.Select(Track.FromMediaItem).OfType<Track>().ToList();

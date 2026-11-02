@@ -32,8 +32,6 @@ public partial class NowPlayingPage : ContentPage
 
 	public bool HasError => _playback.HasError;
 
-	public bool IsLoadingTrack => _playback.IsBusy;
-
 	public double DurationSeconds => Math.Max(_playback.Duration.TotalSeconds, 1);
 
 	public double PositionSeconds => _playback.Position.TotalSeconds;
@@ -76,7 +74,7 @@ public partial class NowPlayingPage : ContentPage
 	{
 		foreach (var property in new[]
 		{
-			nameof(TrackTitle), nameof(Artist), nameof(ArtworkUrl), nameof(Error), nameof(HasError), nameof(IsLoadingTrack),
+			nameof(TrackTitle), nameof(Artist), nameof(ArtworkUrl), nameof(Error), nameof(HasError),
 			nameof(PlayPauseSymbol), nameof(ShuffleSymbol), nameof(RepeatSymbol), nameof(LikeSymbol),
 		})
 		{

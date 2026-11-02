@@ -19,7 +19,8 @@
             Grid.Row="1"
             ItemsSource="{Binding Rows}"
             ItemTemplate="{StaticResource RowTemplateSelector}"
-            IsVisible="{Binding ShowResults}">
+            IsVisible="{Binding ShowResults}"
+            Scrolled="OnResultsScrolled">
             <CollectionView.EmptyView>
                 <Label
                     Text="{Binding Message}"

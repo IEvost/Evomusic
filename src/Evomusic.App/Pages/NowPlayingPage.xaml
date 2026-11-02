@@ -69,9 +69,7 @@
                     <controls:SymbolImageSource Name="backward.fill" PointSize="30" Color="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                 </ImageButton.Source>
             </ImageButton>
-            <ImageButton Grid.Column="1" Clicked="OnPlayPauseClicked" HorizontalOptions="Center" Source="{Binding PlayPauseSymbol}" />
-            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsLoadingTrack}" IsVisible="{Binding IsLoadingTrack}" HorizontalOptions="Center" />
-            <ImageButton Grid.Column="2" Clicked="OnNextClicked" HorizontalOptions="Center">
+            <ImageButton Grid.Column="1" Clicked="OnPlayPauseClicked" HorizontalOptions="Center" Source="{Binding PlayPauseSymbol}" />            <ImageButton Grid.Column="2" Clicked="OnNextClicked" HorizontalOptions="Center">
                 <ImageButton.Source>
                     <controls:SymbolImageSource Name="forward.fill" PointSize="30" Color="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                 </ImageButton.Source>

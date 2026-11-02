@@ -36,10 +36,7 @@
                     LineBreakMode="TailTruncation" />
             </VerticalStackLayout>
 
-            <Grid Grid.Column="2">
-                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" WidthRequest="24" HeightRequest="24" />
-                <ImageButton x:Name="PlayPauseButton" Clicked="OnPlayPauseClicked" WidthRequest="44" HeightRequest="44" />
-            </Grid>
+            <ImageButton x:Name="PlayPauseButton" Grid.Column="2" Clicked="OnPlayPauseClicked" WidthRequest="44" HeightRequest="44" />
 
             <ImageButton Grid.Column="3" Clicked="OnNextClicked" WidthRequest="44" HeightRequest="44">
                 <ImageButton.Source>

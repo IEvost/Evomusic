@@ -38,33 +38,39 @@ public partial class RowTemplates : ResourceDictionary
 			await Navigator.OpenPageAsync(link.BrowseId, link.Title);
 	}
 
-	// Context menu actions only apply to songs and videos; albums/playlists ignore them.
-	private void OnPlayNextClicked(object? sender, EventArgs e)
+	/// <summary>Press-and-hold on a song: Play Next, Add to Queue, Start Radio, Add to Playlist.</summary>
+	private async void OnLongPressed(object? sender, View view)
 	{
-		if (MenuTrack(sender) is { } track)
-			Navigator.Playback.PlayNext(track);
-	}
+		var item = view.BindingContext switch
+		{
+			ItemRow row => row.Item,
+			MediaItem media => media,
+			_ => null,
+		};
+		if (item is null || Track.FromMediaItem(item) is not { } track || Shell.Current?.CurrentPage is not { } page)
+			return;
 
-	private void OnAddToQueueClicked(object? sender, EventArgs e)
-	{
-		if (MenuTrack(sender) is { } track)
-			Navigator.Playback.AddToQueue(track);
+		Navigator.HideKeyboard();
+		const string playNext = "Play Next";
+		const string addToQueue = "Add to Queue";
+		const string startRadio = "Start Radio";
+		const string addToPlaylist = "Add to Playlist…";
+		switch (await page.DisplayActionSheetAsync(track.Title, "Cancel", null, playNext, addToQueue, startRadio, addToPlaylist))
+		{
+			case playNext:
+				Navigator.Playback.PlayNext(track);
+				break;
+			case addToQueue:
+				Navigator.Playback.AddToQueue(track);
+				break;
+			case startRadio:
+				await Navigator.Playback.StartRadioAsync(track);
+				break;
+			case addToPlaylist:
+				await Navigator.ShowAddToPlaylistAsync(track);
+				break;
+		}
 	}
-
-	private async void OnStartRadioClicked(object? sender, EventArgs e)
-	{
-		if (MenuTrack(sender) is { } track)
-			await Navigator.Playback.StartRadioAsync(track);
-	}
-
-	private async void OnAddToPlaylistClicked(object? sender, EventArgs e)
-	{
-		if (MenuTrack(sender) is { } track)
-			await Navigator.ShowAddToPlaylistAsync(track);
-	}
-
-	private static Track? MenuTrack(object? sender) =>
-		(sender as MenuItem)?.CommandParameter is MediaItem item ? Track.FromMediaItem(item) : null;
 
 	private async void OnPlayAllClicked(object? sender, EventArgs e) => await PlayAllAsync(sender, shuffle: false);
 

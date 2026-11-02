@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Evomusic.Core.Models;assembly=Evomusic.Core"
              xmlns:pages="clr-namespace:Evomusic.App.Pages"
+             xmlns:controls="clr-namespace:Evomusic.App.Controls"
              x:Class="Evomusic.App.Pages.HomePage"
              x:DataType="pages:HomePage"
              Title="Home">
@@ -11,7 +12,9 @@
         <ToolbarItem x:Name="AccountToolbarItem" Clicked="OnAccountClicked" />
     </ContentPage.ToolbarItems>
 
-    <Grid>
+    <Grid RowDefinitions="*,Auto">
+        <controls:MiniPlayerView Grid.Row="1" />
+
         <!-- Signed out -->
         <VerticalStackLayout
             IsVisible="{Binding IsSignedOut}"
@@ -57,11 +60,14 @@
                                     <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12" />
                                 </CollectionView.ItemsLayout>
                                 <CollectionView.Header>
-                                    <BoxView WidthRequest="4" Color="Transparent" />
+                                    <ContentView WidthRequest="4" />
                                 </CollectionView.Header>
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="models:ShelfItem">
                                         <VerticalStackLayout WidthRequest="150" Spacing="2">
+                                            <VerticalStackLayout.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnItemTapped" />
+                                            </VerticalStackLayout.GestureRecognizers>
                                             <Border StrokeThickness="0" StrokeShape="RoundRectangle 8">
                                                 <Image
                                                     Source="{Binding ThumbnailUrl}"

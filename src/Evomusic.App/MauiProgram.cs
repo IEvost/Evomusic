@@ -1,6 +1,7 @@
 ﻿using Evomusic.App.Pages;
 using Evomusic.App.Services;
 using Evomusic.Core.Auth;
+using Evomusic.Core.Streams;
 using Microsoft.Extensions.Logging;
 
 namespace Evomusic.App;
@@ -20,6 +21,13 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<ICookieStore, SecureCookieStore>();
 		builder.Services.AddSingleton<SessionService>();
+		builder.Services.AddSingleton<IStreamResolver, YoutubeExplodeResolver>();
+#if IOS
+		builder.Services.AddSingleton<IAudioPlayer, AvAudioPlayer>();
+#elif WINDOWS
+		builder.Services.AddSingleton<IAudioPlayer, WindowsAudioPlayer>();
+#endif
+		builder.Services.AddSingleton<PlaybackService>();
 		builder.Services.AddSingleton<HomePage>();
 		builder.Services.AddTransient<LoginPage>();
 

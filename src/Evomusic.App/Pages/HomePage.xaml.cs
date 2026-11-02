@@ -9,13 +9,15 @@ namespace Evomusic.App.Pages;
 public partial class HomePage : ContentPage
 {
 	private readonly SessionService _session;
+	private readonly PlaybackService _playback;
 	private readonly IServiceProvider _services;
 	private bool _restored;
 
-	public HomePage(SessionService session, IServiceProvider services)
+	public HomePage(SessionService session, PlaybackService playback, IServiceProvider services)
 	{
 		InitializeComponent();
 		_session = session;
+		_playback = playback;
 		_services = services;
 		_session.SessionChanged += async (_, _) => await LoadAsync();
 
@@ -82,6 +84,17 @@ public partial class HomePage : ContentPage
 			SetLoading(false);
 			Notify(nameof(ErrorText), nameof(HasError));
 		}
+	}
+
+	/// <summary>Plays the tapped song with the rest of its shelf as the queue. Albums/playlists come in phase 3.</summary>
+	private async void OnItemTapped(object? sender, TappedEventArgs e)
+	{
+		if ((sender as BindableObject)?.BindingContext is not ShelfItem { VideoId: not null } item)
+			return;
+
+		var shelf = Shelves.FirstOrDefault(s => s.Items.Contains(item));
+		var tracks = (shelf?.Items ?? [item]).Select(Track.FromShelfItem).OfType<Track>().ToList();
+		await _playback.PlayAsync(tracks, tracks.FindIndex(t => t.VideoId == item.VideoId));
 	}
 
 	private async void OnSignInClicked(object? sender, EventArgs e)

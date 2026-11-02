@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:Evomusic.App.Services"
+             x:Class="Evomusic.App.Controls.MiniPlayerView"
+             x:DataType="services:PlaybackService"
+             IsVisible="{Binding HasTrack}">
+
+    <Border
+        Margin="8,0,8,8"
+        Padding="8"
+        StrokeThickness="0"
+        StrokeShape="RoundRectangle 14"
+        BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+        <Grid ColumnDefinitions="48,*,44,44" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+            <Border Grid.RowSpan="2" StrokeThickness="0" StrokeShape="RoundRectangle 6">
+                <Image
+                    Source="{Binding Current.ThumbnailUrl}"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    Aspect="AspectFill" />
+            </Border>
+
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                <Label Text="{Binding Current.Title}" FontSize="15" LineBreakMode="TailTruncation" />
+                <Label
+                    Text="{Binding Current.Artist}"
+                    FontSize="13"
+                    TextColor="{StaticResource Gray400}"
+                    LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+
+            <Grid Grid.Column="2">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" WidthRequest="24" HeightRequest="24" />
+                <Button
+                    x:Name="PlayPauseButton"
+                    IsVisible="True"
+                    Clicked="OnPlayPauseClicked"
+                    Style="{StaticResource MiniPlayerButton}" />
+            </Grid>
+
+            <Button
+                Grid.Column="3"
+                Text="⏭︎"
+                Clicked="OnNextClicked"
+                Style="{StaticResource MiniPlayerButton}" />
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                Grid.ColumnSpan="3"
+                Text="{Binding Error}"
+                IsVisible="{Binding HasError}"
+                TextColor="Red"
+                FontSize="12" />
+        </Grid>
+    </Border>
+
+</ContentView>
